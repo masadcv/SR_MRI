@@ -103,3 +103,9 @@ if __name__ == '__main__':
     x = torch.randn(1, 1, 32, 32)
     y = model(x)
     print(y.shape)
+
+    # x4
+    model = IDN(scale=4, image_features=1, fblock_num_features=16, num_features=64, d=16, s=4)
+    x = torch.randn(1, 1, 32, 32)
+    y = model(x)
+    print(y.shape)
