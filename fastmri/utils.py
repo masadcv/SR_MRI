@@ -9,6 +9,7 @@ import h5py
 import os
 import torch
 
+
 def save_reconstructions(reconstructions, out_dir):
     """
     Save reconstruction images.
@@ -26,13 +27,12 @@ def save_reconstructions(reconstructions, out_dir):
     # out_dir.mkdir(exist_ok=True, parents=True)
 
     os.makedirs(str(out_dir), exist_ok=True)
-    print(out_dir)#logs/unet/unet_demo/zpCar6X/unet_demo/reconstructions
+    print(out_dir)  # logs/unet/unet_demo/zpCar6X/unet_demo/reconstructions
     for fname, recons in reconstructions.items():
         print(fname)
-        with h5py.File(str(out_dir) + '/' + str(fname) + '.hdf5', "w") as f:
+        with h5py.File(str(out_dir) + "/" + str(fname) + ".hdf5", "w") as f:
             print(fname)
             if isinstance(recons, list):
                 recons = [r[1][None, ...] for r in recons]
                 recons = torch.cat(recons, dim=0)
             f.create_dataset("reconstruction", data=recons)
-

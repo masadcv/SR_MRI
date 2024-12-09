@@ -4,6 +4,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 """
+
 import json
 
 import h5py
@@ -22,8 +23,8 @@ def save_reconstructions(reconstructions, out_dir):
     """
     out_dir.mkdir(exist_ok=True, parents=True)
     for fname, recons in reconstructions.items():
-        with h5py.File(out_dir / fname, 'w') as f:
-            f.create_dataset('reconstruction', data=recons)
+        with h5py.File(out_dir / fname, "w") as f:
+            f.create_dataset("reconstruction", data=recons)
 
 
 def tensor_to_complex_np(data):

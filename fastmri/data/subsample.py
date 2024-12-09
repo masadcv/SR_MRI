@@ -43,7 +43,7 @@ class MaskFunc(object):
         Args:
             center_fractions (List[float]): Fraction of low-frequency columns to be
                 retained. If multiple values are provided, then one of these
-                numbers is chosen uniformly each time. 
+                numbers is chosen uniformly each time.
             accelerations (List[int]): Amount of under-sampling. This should have
                 the same length as center_fractions. If multiple values are
                 provided, then one of these is chosen uniformly each time.
@@ -100,7 +100,7 @@ class RandomMaskFunc(MaskFunc):
             seed (int, optional): Seed for the random number generator. Setting
                 the seed ensures the same mask is generated each time for the
                 same shape. The random state is reset afterwards.
-                
+
         Returns:
             torch.Tensor: A mask of the specified shape.
         """
@@ -148,7 +148,7 @@ class EquispacedMaskFunc(MaskFunc):
     Note that this function may not give equispaced samples (documented in
     https://github.com/facebookresearch/fastMRI/issues/54), which will require
     modifications to standard GRAPPA approaches. Nonetheless, this aspect of
-    the function has been preserved to match the public multicoil data. 
+    the function has been preserved to match the public multicoil data.
     """
 
     def __call__(self, shape, seed):

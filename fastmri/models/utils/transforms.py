@@ -36,7 +36,7 @@ def get_affine_transform(center, scale, rot, output_size):
 
 
 def affine_transform(pt, t):
-    new_pt = np.array([pt[0], pt[1], 1.])
+    new_pt = np.array([pt[0], pt[1], 1.0])
     new_pt = np.dot(t, new_pt)
     return new_pt[:2]
 
@@ -71,9 +71,13 @@ def flip_joints(joints, joints_vis, width, pairs):
     joints[:, 0] = width - joints[:, 0] - 1
 
     for pair in pairs:
-        joints[pair[0], :], joints[pair[1], :] = \
-            joints[pair[1], :], joints[pair[0], :].copy()
-        joints_vis[pair[0], :], joints_vis[pair[1], :] = \
-            joints_vis[pair[1], :], joints_vis[pair[0], :].copy()
+        joints[pair[0], :], joints[pair[1], :] = (
+            joints[pair[1], :],
+            joints[pair[0], :].copy(),
+        )
+        joints_vis[pair[0], :], joints_vis[pair[1], :] = (
+            joints_vis[pair[1], :],
+            joints_vis[pair[0], :].copy(),
+        )
 
     return joints, joints_vis

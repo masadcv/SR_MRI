@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 import torch
 import numpy as np
 
+
 def complex_mul(x, y):
     """
     Complex multiplication.
@@ -103,17 +104,16 @@ def complex_abs(data):
     """
     assert data.size(-1) == 2
 
-    return (data ** 2).sum(dim=-1).sqrt()
-
+    return (data**2).sum(dim=-1).sqrt()
 
 
 def complex_abs_numpy(data):
     assert data.shape[-1] == 2
 
-    return np.sqrt(np.sum(data ** 2, axis=-1))
+    return np.sqrt(np.sum(data**2, axis=-1))
 
 
-def complex_abs_sq(data):#multi coil
+def complex_abs_sq(data):  # multi coil
     """
     Compute the squared absolute value of a complex tensor.
 
@@ -125,7 +125,7 @@ def complex_abs_sq(data):#multi coil
         torch.Tensor: Squared absolute value of data.
     """
     assert data.size(-1) == 2
-    return (data ** 2).sum(dim=-1)
+    return (data**2).sum(dim=-1)
 
 
 # Helper functions

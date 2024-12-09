@@ -10,15 +10,15 @@ import torch
 
 
 def create_mask_for_mask_type(mask_type_str, center_fractions, accelerations):
-    if mask_type_str == 'random':
+    if mask_type_str == "random":
         return RandomMaskFunc(center_fractions, accelerations)
-    elif mask_type_str == 'equispaced':
+    elif mask_type_str == "equispaced":
         return EquispacedMaskFunc(center_fractions, accelerations)
     else:
         raise Exception(f"{mask_type_str} not supported")
 
 
-class MaskFunc():
+class MaskFunc:
     def __init__(self, center_fractions, accelerations):
         """
         Args:
@@ -31,7 +31,9 @@ class MaskFunc():
                 uniformly each time.
         """
         if len(center_fractions) != len(accelerations):
-            raise ValueError('Number of center fractions should match number of accelerations')
+            raise ValueError(
+                "Number of center fractions should match number of accelerations"
+            )
 
         self.center_fractions = center_fractions
         self.accelerations = accelerations
@@ -78,7 +80,9 @@ class RandomMaskFunc(MaskFunc):
                 not be spaced evenly.
         """
         if len(center_fractions) != len(accelerations):
-            raise ValueError('Number of center fractions should match number of accelerations')
+            raise ValueError(
+                "Number of center fractions should match number of accelerations"
+            )
 
         self.center_fractions = center_fractions
         self.accelerations = accelerations
@@ -95,7 +99,7 @@ class RandomMaskFunc(MaskFunc):
             torch.Tensor: A mask of the specified shape.
         """
         if len(shape) < 3:
-            raise ValueError('Shape should have 3 or more dimensions')
+            raise ValueError("Shape should have 3 or more dimensions")
 
         self.rng.seed(seed)
         num_cols = shape[-2]
@@ -106,7 +110,7 @@ class RandomMaskFunc(MaskFunc):
         prob = (num_cols / acceleration - num_low_freqs) / (num_cols - num_low_freqs)
         mask = self.rng.uniform(size=num_cols) < prob
         pad = (num_cols - num_low_freqs + 1) // 2
-        mask[pad:pad + num_low_freqs] = True
+        mask[pad : pad + num_low_freqs] = True
 
         # Reshape the mask
         mask_shape = [1 for _ in shape]
@@ -114,6 +118,7 @@ class RandomMaskFunc(MaskFunc):
         mask = torch.from_numpy(mask.reshape(*mask_shape).astype(np.float32))
 
         return mask
+
 
 class EquispacedMaskFunc(MaskFunc):
     """
@@ -131,6 +136,7 @@ class EquispacedMaskFunc(MaskFunc):
     (center_fraction, acceleration) is chosen uniformly at random each time the EquispacedMaskFunc
     object is called.
     """
+
     def __call__(self, shape, seed):
         """
         Args:
@@ -142,7 +148,7 @@ class EquispacedMaskFunc(MaskFunc):
             torch.Tensor: A mask of the specified shape.
         """
         if len(shape) < 3:
-           raise ValueError('Shape should have 3 or more dimensions')
+            raise ValueError("Shape should have 3 or more dimensions")
 
         self.rng.seed(seed)
         center_fraction, acceleration = self.choose_acceleration()
@@ -152,10 +158,12 @@ class EquispacedMaskFunc(MaskFunc):
         # Create the mask
         mask = np.zeros(num_cols, dtype=np.float32)
         pad = (num_cols - num_low_freqs + 1) // 2
-        mask[pad:pad + num_low_freqs] = True
+        mask[pad : pad + num_low_freqs] = True
 
         # Determine acceleration rate by adjusting for the number of low frequencies
-        adjusted_accel = (acceleration * (num_low_freqs - num_cols)) / (num_low_freqs * acceleration - num_cols)
+        adjusted_accel = (acceleration * (num_low_freqs - num_cols)) / (
+            num_low_freqs * acceleration - num_cols
+        )
         offset = self.rng.randint(0, round(adjusted_accel))
 
         accel_samples = np.arange(offset, num_cols - 1, adjusted_accel)

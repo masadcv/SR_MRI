@@ -13,10 +13,10 @@ from argparse import ArgumentParser
 from pytorch_lightning import Trainer, seed_everything
 
 
-sys.path.append('/home/chunmeifeng/MINet/')
+sys.path.append("/home/chunmeifeng/MINet/")
 
 from fastmri.data.mri_data import fetch_dir
-from module_MINet import SRModule 
+from experimental.SR.module_SR import SRSingleModule
 
 
 def main(args):
@@ -25,7 +25,7 @@ def main(args):
     # 1 INIT LIGHTNING MODEL
     # ------------------------
     seed_everything(args.seed)
-    model = SRModule(**vars(args))
+    model = SRSingleModule(**vars(args))
 
     # ------------------------
     # 2 INIT TRAINER
@@ -52,10 +52,9 @@ def build_args():
     knee_path = fetch_dir("knee_path", path_config)
     logdir = fetch_dir("log_path", path_config) / "minet" / "2x_SR"
 
-
     parent_parser = ArgumentParser(add_help=False)
 
-    parser = SRModule.add_model_specific_args(parent_parser)
+    parser = SRSingleModule.add_model_specific_args(parent_parser)
     parser = Trainer.add_argparse_args(parser)
 
     num_gpus = 1
@@ -74,10 +73,10 @@ def build_args():
         accelerations=[4],
         n_channels_in=1,
         n_channels_out=1,
-        n_resgroups = 6,    
-        n_resblocks = 6,    
-        n_feats = 64, 
-        lr=0.00001,     
+        n_resgroups=6,
+        n_resblocks=6,
+        n_feats=64,
+        lr=0.00001,
         lr_step_size=40,
         lr_gamma=0.1,
         weight_decay=0.0,
@@ -101,7 +100,6 @@ def build_args():
         deterministic=True,
         # resume_from_checkpoint = '/checkpoints/epoch=34.ckpt'
     )
-
 
     parser.add_argument("--mode", default="train", type=str)
     args = parser.parse_args()

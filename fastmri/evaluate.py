@@ -100,7 +100,12 @@ def ssim(gt, pred, maxval=None):
     return ssim
 
 
-METRIC_FUNCS = dict(MSE=mse, NMSE=nmse, PSNR=psnr, SSIM=ssim,)
+METRIC_FUNCS = dict(
+    MSE=mse,
+    NMSE=nmse,
+    PSNR=psnr,
+    SSIM=ssim,
+)
 
 
 class Metrics(object):
@@ -183,7 +188,7 @@ if __name__ == "__main__":
         help="Which challenge",
     )
     parser.add_argument("--acceleration", type=int, default=None)
-    print ('corpd')
+    print("corpd")
     parser.add_argument(
         "--acquisition",
         choices=[

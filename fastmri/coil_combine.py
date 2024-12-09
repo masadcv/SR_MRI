@@ -23,7 +23,7 @@ def rss(data, dim=0):
     Returns:
         torch.Tensor: The RSS value.
     """
-    return torch.sqrt((data ** 2).sum(dim))
+    return torch.sqrt((data**2).sum(dim))
 
 
 def rss_complex(data, dim=0):

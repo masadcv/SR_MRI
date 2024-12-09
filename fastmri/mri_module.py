@@ -27,7 +27,7 @@ from fastmri.evaluate import NMSE, PSNR, SSIM, DistributedMetricSum
 class MriModule(pl.LightningModule):
     """
     Abstract super class for deep larning reconstruction models.
-    
+
     This is a subclass of the LightningModule class from pytorch_lightning,
     with some additional functionality specific to fastMRI:
         - fastMRI data loaders
@@ -86,7 +86,7 @@ class MriModule(pl.LightningModule):
         self.test_split = test_split
         self.sample_rate = sample_rate
         self.batch_size = batch_size
-        self.num_workers = num_workers        
+        self.num_workers = num_workers
 
         self.NMSE = DistributedMetricSum(name="NMSE")
         self.SSIM = DistributedMetricSum(name="SSIM")
@@ -101,7 +101,7 @@ class MriModule(pl.LightningModule):
             transform=data_transform,
             sample_rate=sample_rate,
             challenge=self.challenge,
-            mode=data_partition
+            mode=data_partition,
         )
 
         is_train = data_partition == "train"
@@ -148,7 +148,9 @@ class MriModule(pl.LightningModule):
 
     def test_dataloader(self):
         return self._create_data_loader(
-            self.test_data_transform(), data_partition=self.test_split, sample_rate=1.0,
+            self.test_data_transform(),
+            data_partition=self.test_split,
+            sample_rate=1.0,
         )
 
     def _visualize(self, val_outputs, val_targets):
@@ -198,7 +200,9 @@ class MriModule(pl.LightningModule):
         visualize_size_inputs = val_inputs[0].shape
         val_outputs = [x[0] for x in val_outputs if x.shape == visualize_size]
         val_targets = [x[0] for x in val_targets if x.shape == visualize_size]
-        val_inputs = [x[0] for x in val_inputs if x.shape == visualize_size_inputs]#????
+        val_inputs = [
+            x[0] for x in val_inputs if x.shape == visualize_size_inputs
+        ]  # ????
 
         num_logs = len(val_outputs)
         num_logs = len(val_inputs)
@@ -213,9 +217,9 @@ class MriModule(pl.LightningModule):
             targets.append(_normalize(val_targets[i]))
             inputs.append(_normalize(val_inputs[i]))
 
-        outputs = np.stack(outputs)#(2, 1, 1, 256, 256)
-        targets = np.stack(targets)#(2, 1, 1, 256, 256)
-        inputs = np.stack(inputs)#(2, 1, 1, 256, 256)
+        outputs = np.stack(outputs)  # (2, 1, 1, 256, 256)
+        targets = np.stack(targets)  # (2, 1, 1, 256, 256)
+        inputs = np.stack(inputs)  # (2, 1, 1, 256, 256)
 
         _save_image(targets, "Target")
         _save_image(outputs, "Reconstruction")
@@ -232,14 +236,14 @@ class MriModule(pl.LightningModule):
         return val_logs
 
     def validation_epoch_end(self, val_logs):
-        #assert val_logs[0]["output_im"].ndim == 3
+        # assert val_logs[0]["output_im"].ndim == 3
         device = val_logs[0]["device"]
 
         # run the visualizations
         self._visualize_val(
-           val_outputs=[x["output"].numpy() for x in val_logs],
-           val_targets=[x["target"].numpy() for x in val_logs],
-           val_inputs=[x["input"].numpy() for x in val_logs],
+            val_outputs=[x["output"].numpy() for x in val_logs],
+            val_targets=[x["target"].numpy() for x in val_logs],
+            val_inputs=[x["input"].numpy() for x in val_logs],
         )
 
         # aggregate losses
@@ -249,7 +253,7 @@ class MriModule(pl.LightningModule):
         inputs = defaultdict(list)
 
         for val_log in val_logs:
-            losses.append(val_log["val_loss"])    
+            losses.append(val_log["val_loss"])
             for i, (fname, slice_ind) in enumerate(
                 zip(val_log["fname"], val_log["slice"])
             ):
@@ -286,9 +290,7 @@ class MriModule(pl.LightningModule):
         metrics = {metric: values / tot_examples for metric, values in metrics.items()}
         print(tot_examples, device, metrics)
 
-        fastmri.save_reconstructions(
-            inputs, self.exp_dir / self.exp_name / "bicubic"
-        )
+        fastmri.save_reconstructions(inputs, self.exp_dir / self.exp_name / "bicubic")
 
         return dict(log=log_metrics, **metrics)
 
@@ -302,9 +304,7 @@ class MriModule(pl.LightningModule):
         for fname in outputs:
             outputs[fname] = np.stack([out for _, out in sorted(outputs[fname])])
 
-        fastmri.save_reconstructions(
-            outputs, self.exp_dir / self.exp_name / "bicubic"
-        )
+        fastmri.save_reconstructions(outputs, self.exp_dir / self.exp_name / "bicubic")
 
         return dict()
 
@@ -326,16 +326,24 @@ class MriModule(pl.LightningModule):
             type=str,
         )
         parser.add_argument(
-            "--sample_rate", default=1.0, type=float,
+            "--sample_rate",
+            default=1.0,
+            type=float,
         )
         parser.add_argument(
-            "--batch_size", default=1, type=int,
+            "--batch_size",
+            default=1,
+            type=int,
         )
         parser.add_argument(
-            "--num_workers", default=4, type=float,
+            "--num_workers",
+            default=4,
+            type=float,
         )
         parser.add_argument(
-            "--seed", default=42, type=int,
+            "--seed",
+            default=42,
+            type=int,
         )
 
         # logging params
@@ -343,10 +351,14 @@ class MriModule(pl.LightningModule):
             "--exp_dir", default=pathlib.Path("logs/"), type=pathlib.Path
         )
         parser.add_argument(
-            "--exp_name", default="my_experiment", type=str,
+            "--exp_name",
+            default="my_experiment",
+            type=str,
         )
         parser.add_argument(
-            "--test_split", default="test", type=str,
+            "--test_split",
+            default="test",
+            type=str,
         )
 
         return parser

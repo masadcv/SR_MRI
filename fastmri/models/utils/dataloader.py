@@ -15,22 +15,20 @@ from dataset.COCO.coco import COCODataset
 from dataset.MPII.mpii import MPIIDataset
 
 
-def get_train_loader(
-        cfg, num_gpu, is_dist=True, is_shuffle=True, start_iter=0):
+def get_train_loader(cfg, num_gpu, is_dist=True, is_shuffle=True, start_iter=0):
     # -------- get raw dataset interface -------- #
     normalize = transforms.Normalize(mean=cfg.INPUT.MEANS, std=cfg.INPUT.STDS)
     transform = transforms.Compose([transforms.ToTensor(), normalize])
     attr = load_dataset(cfg.DATASET.NAME)
-    if cfg.DATASET.NAME == 'COCO':
-        Dataset = COCODataset 
-    elif cfg.DATASET.NAME == 'MPII':
+    if cfg.DATASET.NAME == "COCO":
+        Dataset = COCODataset
+    elif cfg.DATASET.NAME == "MPII":
         Dataset = MPIIDataset
-    dataset = Dataset(attr, 'train', transform)
+    dataset = Dataset(attr, "train", transform)
 
     # -------- make samplers -------- #
     if is_dist:
-        sampler = torch_samplers.DistributedSampler(
-                dataset, shuffle=is_shuffle)
+        sampler = torch_samplers.DistributedSampler(dataset, shuffle=is_shuffle)
     elif is_shuffle:
         sampler = torch.utils.data.sampler.RandomSampler(dataset)
     else:
@@ -42,14 +40,16 @@ def get_train_loader(
     aspect_grouping = [1] if cfg.DATALOADER.ASPECT_RATIO_GROUPING else []
     if aspect_grouping:
         batch_sampler = torch_samplers.GroupedBatchSampler(
-                sampler, dataset, aspect_grouping, images_per_gpu,
-                drop_uneven=False)
+            sampler, dataset, aspect_grouping, images_per_gpu, drop_uneven=False
+        )
     else:
         batch_sampler = torch.utils.data.sampler.BatchSampler(
-                sampler, images_per_gpu, drop_last=True)#False
+            sampler, images_per_gpu, drop_last=True
+        )  # False
 
     batch_sampler = torch_samplers.IterationBasedBatchSampler(
-            batch_sampler, cfg.SOLVER.MAX_ITER, start_iter)
+        batch_sampler, cfg.SOLVER.MAX_ITER, start_iter
+    )
 
     # -------- make data_loader -------- #
     class BatchCollator(object):
@@ -65,9 +65,11 @@ def get_train_loader(
             return images, valids, labels
 
     data_loader = torch.utils.data.DataLoader(
-            dataset, num_workers=cfg.DATALOADER.NUM_WORKERS,
-            batch_sampler=batch_sampler,
-            collate_fn=BatchCollator(cfg.DATALOADER.SIZE_DIVISIBILITY), )
+        dataset,
+        num_workers=cfg.DATALOADER.NUM_WORKERS,
+        batch_sampler=batch_sampler,
+        collate_fn=BatchCollator(cfg.DATALOADER.SIZE_DIVISIBILITY),
+    )
 
     return data_loader
 
@@ -77,9 +79,9 @@ def get_test_loader(cfg, num_gpu, local_rank, stage, is_dist=True):
     normalize = transforms.Normalize(mean=cfg.INPUT.MEANS, std=cfg.INPUT.STDS)
     transform = transforms.Compose([transforms.ToTensor(), normalize])
     attr = load_dataset(cfg.DATASET.NAME)
-    if cfg.DATASET.NAME == 'COCO':
-        Dataset = COCODataset 
-    elif cfg.DATASET.NAME == 'MPII':
+    if cfg.DATASET.NAME == "COCO":
+        Dataset = COCODataset
+    elif cfg.DATASET.NAME == "MPII":
         Dataset = MPIIDataset
     dataset = Dataset(attr, stage, transform)
 
@@ -89,7 +91,7 @@ def get_test_loader(cfg, num_gpu, local_rank, stage, is_dist=True):
     st = local_rank * num_data_per_gpu
     ed = min(num_data, st + num_data_per_gpu)
     indices = range(st, ed)
-    subset= torch.utils.data.Subset(dataset, indices)
+    subset = torch.utils.data.Subset(dataset, indices)
 
     # -------- make samplers -------- #
     sampler = torch.utils.data.sampler.SequentialSampler(subset)
@@ -97,7 +99,8 @@ def get_test_loader(cfg, num_gpu, local_rank, stage, is_dist=True):
     images_per_gpu = cfg.TEST.IMS_PER_GPU
 
     batch_sampler = torch.utils.data.sampler.BatchSampler(
-            sampler, images_per_gpu, drop_last=True)#False
+        sampler, images_per_gpu, drop_last=True
+    )  # False
 
     # -------- make data_loader -------- #
     class BatchCollator(object):
@@ -112,12 +115,14 @@ def get_test_loader(cfg, num_gpu, local_rank, stage, is_dist=True):
             scales = list(transposed_batch[3])
             image_ids = list(transposed_batch[4])
 
-            return images, scores, centers, scales, image_ids 
+            return images, scores, centers, scales, image_ids
 
     data_loader = torch.utils.data.DataLoader(
-            subset, num_workers=cfg.DATALOADER.NUM_WORKERS,
-            batch_sampler=batch_sampler,
-            collate_fn=BatchCollator(cfg.DATALOADER.SIZE_DIVISIBILITY), )
+        subset,
+        num_workers=cfg.DATALOADER.NUM_WORKERS,
+        batch_sampler=batch_sampler,
+        collate_fn=BatchCollator(cfg.DATALOADER.SIZE_DIVISIBILITY),
+    )
     data_loader.ori_dataset = dataset
 
     return data_loader

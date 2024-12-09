@@ -1,4 +1,3 @@
-
 import csv
 import os
 
@@ -16,6 +15,7 @@ import numpy as np
 import torch
 import yaml
 from torch.utils.data import Dataset
+
 
 def fetch_dir(key, data_config_file=pathlib.Path("fastmri_dirs.yaml")):
     """
@@ -55,6 +55,7 @@ def fetch_dir(key, data_config_file=pathlib.Path("fastmri_dirs.yaml")):
 
     return data_dir
 
+
 def et_query(
     root: etree.Element,
     qlist: Sequence[str],
@@ -89,57 +90,70 @@ def et_query(
 
 class SliceDataset(Dataset):
     def __init__(
-            self,
-            root,
-            transform,
-            challenge,
-            sample_rate=1,
-            dataset_cache_file=pathlib.Path("dataset_cache.pkl"),
-            num_cols=None,
-            mode='train',
+        self,
+        root,
+        transform,
+        challenge,
+        sample_rate=1,
+        dataset_cache_file=pathlib.Path("dataset_cache.pkl"),
+        num_cols=None,
+        mode="train",
     ):
         self.mode = mode
 
-        #challenge
+        # challenge
         if challenge not in ("singlecoil", "multicoil"):
             raise ValueError('challenge should be either "singlecoil" or "multicoil"')
         self.recons_key = (
             "reconstruction_esc" if challenge == "singlecoil" else "reconstruction_rss"
         )
-        #transform
+        # transform
         self.transform = transform
 
-        self.examples=[]
+        self.examples = []
 
-        self.cur_path=root
-        self.csv_file=os.path.join(self.cur_path,"singlecoil_"+self.mode+"_split_less.csv")
+        self.cur_path = root
+        self.csv_file = os.path.join(
+            self.cur_path, "singlecoil_" + self.mode + "_split_less.csv"
+        )
 
-        #读取CSV
-        with open(self.csv_file,'r') as f:
-            reader=csv.reader(f)
+        # 读取CSV
+        with open(self.csv_file, "r") as f:
+            reader = csv.reader(f)
 
             for row in reader:
-                pd_metadata, pd_num_slices = self._retrieve_metadata(os.path.join(self.cur_path,row[0]+'.h5'))
+                pd_metadata, pd_num_slices = self._retrieve_metadata(
+                    os.path.join(self.cur_path, row[0] + ".h5")
+                )
 
-                pdfs_metadata, pdfs_num_slices = self._retrieve_metadata(os.path.join(self.cur_path, row[1]+'.h5'))
+                pdfs_metadata, pdfs_num_slices = self._retrieve_metadata(
+                    os.path.join(self.cur_path, row[1] + ".h5")
+                )
 
-                for slice_id in range(min(pd_num_slices,pdfs_num_slices)):
-                    self.examples.append((os.path.join(self.cur_path, row[0]+'.h5'),os.path.join(self.cur_path, row[1]+'.h5')
-                                          ,slice_id,pd_metadata,pdfs_metadata))
+                for slice_id in range(min(pd_num_slices, pdfs_num_slices)):
+                    self.examples.append(
+                        (
+                            os.path.join(self.cur_path, row[0] + ".h5"),
+                            os.path.join(self.cur_path, row[1] + ".h5"),
+                            slice_id,
+                            pd_metadata,
+                            pdfs_metadata,
+                        )
+                    )
 
         if sample_rate < 1:
             random.shuffle(self.examples)
             num_examples = round(len(self.examples) * sample_rate)
 
-            self.examples=self.examples[0:num_examples]
+            self.examples = self.examples[0:num_examples]
 
     def __len__(self):
         return len(self.examples)
 
     def __getitem__(self, i):
 
-        #读取pd
-        pd_fname,pdfs_fname,slice,pd_metadata,pdfs_metadata = self.examples[i]
+        # 读取pd
+        pd_fname, pdfs_fname, slice, pd_metadata, pdfs_metadata = self.examples[i]
 
         with h5py.File(pd_fname, "r") as hf:
             pd_kspace = hf["kspace"][slice]
@@ -155,25 +169,35 @@ class SliceDataset(Dataset):
         if self.transform is None:
             pd_sample = (pd_kspace, pd_mask, pd_target, attrs, pd_fname, slice)
         else:
-            pd_sample = self.transform(pd_kspace, pd_mask, pd_target, attrs, pd_fname, slice)
+            pd_sample = self.transform(
+                pd_kspace, pd_mask, pd_target, attrs, pd_fname, slice
+            )
 
-        with h5py.File(pdfs_fname, "r") as hf:
-            pdfs_kspace = hf["kspace"][slice]
-            pdfs_mask = np.asarray(hf["mask"]) if "mask" in hf else None
+        # with h5py.File(pdfs_fname, "r") as hf:
+        #     pdfs_kspace = hf["kspace"][slice]
+        #     pdfs_mask = np.asarray(hf["mask"]) if "mask" in hf else None
 
-            pdfs_target = hf[self.recons_key][slice] if self.recons_key in hf else None
+        #     pdfs_target = hf[self.recons_key][slice] if self.recons_key in hf else None
 
-            attrs = dict(hf.attrs)
+        #     attrs = dict(hf.attrs)
 
-            attrs.update(pdfs_metadata)
+        #     attrs.update(pdfs_metadata)
 
-        if self.transform is None:
-            pdfs_sample = (pdfs_kspace, pdfs_mask, pdfs_target, attrs, pdfs_fname, slice)
-        else:
-            pdfs_sample = self.transform(pdfs_kspace, pdfs_mask, pdfs_target, attrs, pdfs_fname, slice)
+        # if self.transform is None:
+        #     pdfs_sample = (
+        #         pdfs_kspace,
+        #         pdfs_mask,
+        #         pdfs_target,
+        #         attrs,
+        #         pdfs_fname,
+        #         slice,
+        #     )
+        # else:
+        #     pdfs_sample = self.transform(
+        #         pdfs_kspace, pdfs_mask, pdfs_target, attrs, pdfs_fname, slice
+        #     )
 
-
-        return (pd_sample,pdfs_sample)
+        return (pd_sample,)
 
     def _retrieve_metadata(self, fname):
         with h5py.File(fname, "r") as hf:

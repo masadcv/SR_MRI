@@ -12,7 +12,7 @@ import torch
 def to_tensor(data):
     """
     Convert numpy array to PyTorch tensor.
-    
+
     For complex arrays, the real and imaginary parts are stacked along the last
     dimension.
 
@@ -122,10 +122,10 @@ def complex_center_crop(data, shape):
     assert 0 < shape[0] <= data.shape[-3]
     assert 0 < shape[1] <= data.shape[-2]
 
-    w_from = (data.shape[-3] - shape[0]) // 2   #80
-    h_from = (data.shape[-2] - shape[1]) // 2   #80
-    w_to = w_from + shape[0]  #240
-    h_to = h_from + shape[1]  #240
+    w_from = (data.shape[-3] - shape[0]) // 2  # 80
+    h_from = (data.shape[-2] - shape[1]) // 2  # 80
+    w_to = w_from + shape[0]  # 240
+    h_to = h_from + shape[1]  # 240
 
     return data[..., w_from:w_to, h_from:h_to, :]
 
@@ -137,7 +137,7 @@ def center_crop_to_smallest(x, y):
     The minimum is taken over dim=-1 and dim=-2. If x is smaller than y at
     dim=-1 and y is smaller than x at dim=-2, then the returned dimension will
     be a mixture of the two.
-    
+
     Args:
         x (torch.Tensor): The first image.
         y (torch.Tensor): The second image

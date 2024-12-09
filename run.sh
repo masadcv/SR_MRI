@@ -12,8 +12,8 @@ conda activate srvenv
 pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 
 python -c 'import torch; print(torch.cuda.is_available())'
-cd /data/home/xaw004/Codes/MICCAI2025/MINet/experimental/MINet
-PYTHONPATH="/data/home/xaw004/Codes/MICCAI2025/MINet" python3 train.py
+cd /data/home/xaw004/Codes/MICCAI2025/SR_MRI/experimental/MINet
+PYTHONPATH="/data/home/xaw004/Codes/MICCAI2025/SR_MRI" python3 train.py
 #cd /data/home/xaw004/Codes/DEXA_Clustering
 
 
