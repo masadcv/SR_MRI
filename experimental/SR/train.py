@@ -50,7 +50,7 @@ def build_args():
     # ------------------------
     path_config = pathlib.Path.cwd() / "mriSR_dirs.yaml"
     knee_path = fetch_dir("knee_path", path_config)
-    logdir = fetch_dir("log_path", path_config) / "minet" / "2x_SR"
+    logdir = fetch_dir("log_path", path_config) / "2x_SR"
 
     parent_parser = ArgumentParser(add_help=False)
 
@@ -73,9 +73,7 @@ def build_args():
         accelerations=[4],
         n_channels_in=1,
         n_channels_out=1,
-        n_resgroups=6,
-        n_resblocks=6,
-        n_feats=64,
+        model="IDNx2",
         lr=0.00001,
         lr_step_size=40,
         lr_gamma=0.1,
@@ -103,7 +101,7 @@ def build_args():
 
     parser.add_argument("--mode", default="train", type=str)
     args = parser.parse_args()
-
+    args.exp_dir = args.exp_dir / args.model
     return args
 
 

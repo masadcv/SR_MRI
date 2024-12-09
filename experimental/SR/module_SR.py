@@ -104,7 +104,7 @@ class SRSingleModule(MriModule):
         return srimage
 
     def training_step(self, batch, batch_idx):
-        image, hrimage, mean, std, fname, slice_num = batch[1]  # pdfs
+        image, hrimage, mean, std, fname, slice_num = batch[0]  # pdfs
         srimage = self(image)
         loss = F.l1_loss(srimage, hrimage)
 
@@ -113,7 +113,7 @@ class SRSingleModule(MriModule):
         return dict(loss=loss, log=logs)
 
     def validation_step(self, batch, batch_idx):
-        image, hrimage, mean, std, fname, slice_num = batch[1]  # pdfs
+        image, hrimage, mean, std, fname, slice_num = batch[0]  # pdfs
 
         srimage = self(image)
 
