@@ -70,7 +70,7 @@ class IDN(nn.Module):
         self.fblock2 = FBlock(fblock_num_features, num_features)
         self.dblocks = nn.Sequential(*[DBlock(num_features, d, s) for _ in range(4)])
         # self.deconv = nn.ConvTranspose2d(num_features, out_features, kernel_size=17, stride=self.scale, padding=8, output_padding=self.scale-1)
-        self.deconv = nn.Conv2d(num_features, out_channels=image_features * scale * scale, kernel_size=7, stride=1, padding=3, padding_mode="reflect")
+        self.deconv = nn.Conv2d(num_features, out_channels=image_features, kernel_size=7, stride=1, padding=3, padding_mode="reflect")
 
         self._initialize_weights()
 
@@ -96,3 +96,10 @@ class IDN(nn.Module):
         x = self.dblocks(x)
         x = self.deconv(x)
         return upresolved + x
+    
+
+if __name__ == '__main__':
+    model = IDN(scale=2, image_features=1, fblock_num_features=16, num_features=64, d=16, s=4)
+    x = torch.randn(1, 1, 32, 32)
+    y = model(x)
+    print(y.shape)
