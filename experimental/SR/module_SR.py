@@ -30,7 +30,8 @@ class SRSingleModule(MriModule):
 
     def __init__(
         self,
-        model="IDNx2",
+        model="IDN",
+        scale=2, 
         lr=0.001,
         mask_type="random",
         center_fractions=[0.08],
@@ -77,18 +78,9 @@ class SRSingleModule(MriModule):
         # n_resblocks = self.n_resblocks,
         # n_feats = self.n_feats,
         # )
-        if model == "IDNx2":
+        if model == "IDN":
             self.model = IDN(
-                scale=2,
-                image_features=1,
-                fblock_num_features=16,
-                num_features=64,
-                d=16,
-                s=4,
-            )
-        elif model == "IDNx4":
-            self.model = IDN(
-                scale=4,
+                scale=scale,
                 image_features=1,
                 fblock_num_features=16,
                 num_features=64,
@@ -231,7 +223,7 @@ class DataTransform(object):
     Data Transformer for training U-Net models.
     """
 
-    def __init__(self, which_challenge, mask_func=None, use_seed=True):
+    def __init__(self, which_challenge, mask_func=None, use_seed=True, scale=2):
         """
         Args:
             which_challenge (str): Either "singlecoil" or "multicoil" denoting
@@ -249,6 +241,7 @@ class DataTransform(object):
         self.mask_func = mask_func
         self.which_challenge = which_challenge
         self.use_seed = use_seed
+        self.scale = scale
 
     def __call__(self, kspace, mask, target, attrs, fname, slice_num):
         """
@@ -291,7 +284,7 @@ class DataTransform(object):
 
         # getLR
         imgfft = fastmri.fft2c(image)
-        imgfft = transforms.complex_center_crop(imgfft, (160, 160))
+        imgfft = transforms.complex_center_crop(imgfft, (320//self.scale, 320//self.scale))
         LR_image = fastmri.ifft2c(imgfft)
 
         # absolute value
