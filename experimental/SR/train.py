@@ -73,7 +73,8 @@ def build_args():
         accelerations=[4],
         n_channels_in=1,
         n_channels_out=1,
-        model="IDNx2",
+        model="IDN",
+        scale=4,
         lr=0.00001,
         lr_step_size=40,
         lr_gamma=0.1,
@@ -101,7 +102,8 @@ def build_args():
 
     parser.add_argument("--mode", default="train", type=str)
     args = parser.parse_args()
-    args.exp_dir = args.exp_dir / args.model
+    args.exp_dir = args.exp_dir / (args.model + f"_{args.scale}x")
+    args.log_dir = args.exp_dir / "logs"
     return args
 
 
